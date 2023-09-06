@@ -1,0 +1,109 @@
+= C++ Baremetal Concurrency
+:revnumber: 0.1
+:revdate: Sep 06, 2023
+:source-highlighter: rouge
+:rouge-style: base16.solarized
+:source-language: c++
+:toc: left
+
+== Introduction
+
+This C++ baremetal concurrency library provides a low-level API for operations
+that must be protected in a concurrent environment, without having to know
+platform details.
+
+[source,cpp]
+----
+#include <conc/concurrency.hpp>
+
+conc::call_in_critical_section(
+  [] { // do something under a critical section
+  });
+
+conc::call_in_critical_section(
+  [] { // or, do something under a critical section
+  },
+  [] { // when this predicate returns true
+       return true; });
+
+conc::wait_on(
+  [] { // block until this predicate returns true
+       return true; });
+----
+
+== Desktop concurrency vs the interrupt model
+
+On a microprocessor, there is only one form of critical section: turning off
+interrupts globally. Because this typically happens in a single-threaded
+environment, there is little to no efficiency concern. However as soon as
+multiple threads are introduced this becomes a problem. Having effectively a
+single global lock to protect every piece of data that can be modified
+concurrently, even data that are unrelated, is not a good idea.
+
+[source,cpp]
+----
+int data1;
+
+conc::call_in_critical_section(
+  [] { // read/write data1
+  });
+
+// ...
+
+int data2;
+
+conc::call_in_critical_section(
+  [] { // read/write data2
+  });
+----
+
+With a global critical section mechanism, two entirely separate pieces of code
+that touch distinct data may still contend for resources. On a single-threaded
+microprocessor this is not an issue; in a multithreaded environment, it is.
+
+To get around this issue, critical section calls are by default distinct -- and
+the above code will _not_ cause contention -- but can be tagged with template
+arguments to indicate that they protect the same thing:
+
+[source,cpp]
+----
+int data;
+struct data_tag;
+
+conc::call_in_critical_section<data_tag>(
+  [] { // read/write data
+  });
+
+// ...
+
+conc::call_in_critical_section<data_tag>(
+  [] { // read/write data again
+  });
+----
+
+In this case, without tagging there would be a data race as two different threads may access `data` concurrently.
+
+== Re-entrancy
+
+In general, re-locking the same mutex recursively is possible using
+`std::recursive_mutex` but it is almost universally considered bad design to
+have to rely on this. Such calls can always be refactored to protect the data
+without re-entrancy into the critical section.
+
+[source,cpp]
+----
+int data;
+
+auto recursive_function() {
+conc::call_in_critical_section(
+  [] { // read/write data
+       // and then possibly make a call to
+       recursive_function();
+  });
+}
+----
+
+This code will cause a deadlock (even though `call_in_critical_section` is
+untagged) and should be refactored so that the access to `data` is protected for
+as small a time as possible, and no functions with potentially-unknown paths
+should be called inside the critical section.
