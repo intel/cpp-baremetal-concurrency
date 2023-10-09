@@ -25,10 +25,6 @@ conc::call_in_critical_section(
   },
   [] { // when this predicate returns true
        return true; });
-
-conc::wait_on(
-  [] { // block until this predicate returns true
-       return true; });
 ----
 
 == Desktop concurrency vs the interrupt model
@@ -81,7 +77,8 @@ conc::call_in_critical_section<data_tag>(
   });
 ----
 
-In this case, without tagging there would be a data race as two different threads may access `data` concurrently.
+In this case, without tagging there would be a data race as two different
+threads may access `data` concurrently.
 
 == Re-entrancy
 
