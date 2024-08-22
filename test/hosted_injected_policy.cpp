@@ -19,8 +19,8 @@ struct custom_policy {
 
     template <typename = void, stdx::invocable F, stdx::predicate... Pred>
         requires(sizeof...(Pred) < 2)
-    static inline auto call_in_critical_section(F &&f, auto &&...pred)
-        -> decltype(auto) {
+    static inline auto
+    call_in_critical_section(F &&f, auto &&...pred) -> decltype(auto) {
         while (true) {
             ++count;
             if ((... and pred())) {

@@ -5,14 +5,14 @@
 namespace {
 struct good_policy {
     template <typename F>
-    [[nodiscard]] constexpr static auto call_in_critical_section(F &&f)
-        -> decltype(auto) {
+    [[nodiscard]] constexpr static auto
+    call_in_critical_section(F &&f) -> decltype(auto) {
         return std::forward<F>(f)();
     }
 
     template <typename F>
-    [[nodiscard]] constexpr static auto call_in_critical_section(F &&f, auto &&)
-        -> decltype(auto) {
+    [[nodiscard]] constexpr static auto
+    call_in_critical_section(F &&f, auto &&) -> decltype(auto) {
         return std::forward<F>(f)();
     }
 };
