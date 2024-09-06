@@ -18,8 +18,19 @@ add_versioned_package("gh:intel/cpp-std-extensions#dc6352e")
 
 add_library(concurrency INTERFACE)
 target_compile_features(concurrency INTERFACE cxx_std_20)
-target_include_directories(concurrency INTERFACE include/)
 target_link_libraries_system(concurrency INTERFACE stdx)
+
+target_sources(
+    concurrency
+    INTERFACE FILE_SET
+              concurrency
+              TYPE
+              HEADERS
+              BASE_DIRS
+              include
+              FILES
+              include/conc/concepts.hpp
+              include/conc/concurrency.hpp)
 
 if(PROJECT_IS_TOP_LEVEL)
     add_docs(docs)
