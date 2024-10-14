@@ -14,11 +14,8 @@ else()
     cpmaddpackage("gh:intel/cicd-repo-infrastructure#3e2bef0")
 endif()
 
-add_versioned_package("gh:intel/cpp-std-extensions#dc6352e")
-
 add_library(concurrency INTERFACE)
 target_compile_features(concurrency INTERFACE cxx_std_20)
-target_link_libraries_system(concurrency INTERFACE stdx)
 
 target_sources(
     concurrency

@@ -34,3 +34,5 @@ add_unit_test(
     warnings
     concurrency
     pthread)
+
+add_compile_fail_test(fail_no_policy.cpp LIBRARIES concurrency)
