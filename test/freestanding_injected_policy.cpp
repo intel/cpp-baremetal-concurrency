@@ -3,11 +3,10 @@
 #include <conc/concepts.hpp>
 #include <conc/concurrency.hpp>
 
-#include <stdx/concepts.hpp>
-
 #include <catch2/catch_test_macros.hpp>
 
 #include <atomic>
+#include <concepts>
 #include <cstdint>
 #include <utility>
 
@@ -19,7 +18,7 @@ auto test_before_definition() {
 struct custom_policy {
     static inline std::atomic<std::uint64_t> count{};
 
-    template <typename = void, stdx::invocable F, stdx::predicate... Pred>
+    template <typename = void, std::invocable F, std::predicate... Pred>
         requires(sizeof...(Pred) < 2)
     static inline auto
     call_in_critical_section(F &&f, auto &&...pred) -> decltype(auto) {
