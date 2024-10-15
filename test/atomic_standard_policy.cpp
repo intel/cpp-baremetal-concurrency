@@ -1,7 +1,9 @@
 #include <conc/atomic.hpp>
 
+#include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 
+#include <concepts>
 #include <cstdint>
 #include <thread>
 
@@ -129,4 +131,16 @@ TEST_CASE("standard policy implements fetch_xor atomically",
     t1.join();
     t2.join();
     CHECK(val == 0b100);
+}
+
+TEMPLATE_TEST_CASE("standard policy has normal types",
+                   "[atomic_standard_policy]", bool, std::uint8_t,
+                   std::uint16_t, std::uint32_t, std::uint64_t) {
+    static_assert(std::same_as<atomic::atomic_type_t<TestType>, TestType>);
+}
+
+TEMPLATE_TEST_CASE("standard policy has normal alignment",
+                   "[atomic_standard_policy]", bool, std::uint8_t,
+                   std::uint16_t, std::uint32_t, std::uint64_t) {
+    static_assert(atomic::alignment_of<TestType> == alignof(TestType));
 }

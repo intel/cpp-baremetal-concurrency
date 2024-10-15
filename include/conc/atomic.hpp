@@ -157,4 +157,14 @@ auto fetch_xor(T &t, U value,
     bitwise_policy auto &p = injected_policy<DummyArgs...>;
     return p.fetch_xor(t, static_cast<T>(value), mo);
 }
+
+template <typename T> struct atomic_type : std::type_identity<T> {};
+template <typename T> using atomic_type_t = typename atomic_type<T>::type;
+
+template <typename T>
+constexpr inline auto alignment_of = alignof(std::atomic<atomic_type_t<T>>);
 } // namespace atomic
+
+#ifdef ATOMIC_CFG
+#include ATOMIC_CFG
+#endif

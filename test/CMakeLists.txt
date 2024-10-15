@@ -45,3 +45,15 @@ add_unit_test(
     LIBRARIES
     warnings
     concurrency)
+
+add_unit_test(
+    atomic_injected_policy_test
+    CATCH2
+    FILES
+    atomic_injected_policy.cpp
+    LIBRARIES
+    warnings
+    concurrency)
+target_compile_definitions(
+    atomic_injected_policy_test
+    PRIVATE -DATOMIC_CFG="${CMAKE_CURRENT_SOURCE_DIR}/atomic_cfg.hpp")
