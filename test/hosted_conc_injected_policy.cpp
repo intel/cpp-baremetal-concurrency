@@ -27,17 +27,22 @@ struct custom_policy {
             }
         }
     }
+
+    template <typename T>
+    constexpr static auto atomic_alignment_of() -> std::size_t {
+        return 4;
+    }
 };
 } // namespace
 
 template <> inline auto conc::injected_policy<> = custom_policy{};
 
 TEST_CASE("standard policy models concept", "[hosted_injected_policy]") {
-    static_assert(conc::concurrency_policy<conc::detail::standard_policy<>>);
+    static_assert(conc::policy<conc::detail::standard_policy<>>);
 }
 
 TEST_CASE("custom policy models concept", "[hosted_injected_policy]") {
-    static_assert(conc::concurrency_policy<custom_policy>);
+    static_assert(conc::policy<custom_policy>);
 }
 
 TEST_CASE("injected custom policy is used", "[hosted_injected_policy]") {
