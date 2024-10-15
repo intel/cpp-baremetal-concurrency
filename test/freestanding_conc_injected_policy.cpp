@@ -35,11 +35,11 @@ struct custom_policy {
 template <> inline auto conc::injected_policy<> = custom_policy{};
 
 TEST_CASE("standard policy models concept", "[freestanding_injected_policy]") {
-    static_assert(conc::concurrency_policy<conc::detail::standard_policy<>>);
+    static_assert(conc::policy<conc::detail::standard_policy<>>);
 }
 
 TEST_CASE("custom policy models concept", "[freestanding_injected_policy]") {
-    static_assert(conc::concurrency_policy<custom_policy>);
+    static_assert(conc::policy<custom_policy>);
 }
 
 TEST_CASE("injected custom policy is used", "[freestanding_injected_policy]") {

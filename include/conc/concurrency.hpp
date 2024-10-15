@@ -26,7 +26,7 @@ template <typename Mutex = std::mutex> class standard_policy {
   public:
     template <typename Uniq = void, std::invocable F, std::predicate... Pred>
         requires(sizeof...(Pred) < 2)
-    static inline auto call_in_critical_section(F &&f, auto &&...pred)
+    static auto call_in_critical_section(F &&f, auto &&...pred)
         -> decltype(std::forward<F>(f)()) {
         while (true) {
             [[maybe_unused]] std::lock_guard l{m<Uniq>};
@@ -40,7 +40,7 @@ template <typename Mutex = std::mutex> class standard_policy {
 template <typename = void> struct standard_policy {
     template <typename = void, std::invocable F, std::predicate... Pred>
         requires(sizeof...(Pred) < 2)
-    static inline auto call_in_critical_section(F &&f, Pred &&...)
+    static auto call_in_critical_section(F &&f, Pred &&...)
         -> decltype(std::forward<F>(f)()) {
         static_assert(always_false_v<F, Pred...>,
                       "No standard concurrency policy defined: inject a policy "
@@ -56,9 +56,9 @@ template <typename...> inline auto injected_policy = detail::standard_policy{};
 template <typename Uniq = decltype([] {}), typename... DummyArgs,
           std::invocable F, std::predicate... Pred>
     requires(sizeof...(DummyArgs) == 0 and sizeof...(Pred) < 2)
-inline auto call_in_critical_section(F &&f, Pred &&...pred)
+auto call_in_critical_section(F &&f, Pred &&...pred)
     -> decltype(std::forward<F>(f)()) {
-    concurrency_policy auto &p = injected_policy<DummyArgs...>;
+    policy auto &p = injected_policy<DummyArgs...>;
     return p.template call_in_critical_section<Uniq>(
         std::forward<F>(f), std::forward<Pred>(pred)...);
 }

@@ -17,7 +17,6 @@ TEST_CASE("standard policy allows 'recursive' critical_sections",
     CHECK(value == 1);
 }
 
-#if __cpp_lib_jthread >= 201911L
 namespace {
 struct rng_CS;
 struct count_CS;
@@ -37,17 +36,20 @@ TEST_CASE("standard policy works", "[standard_policy]") {
     auto &rng = get_rng();
     auto count = 0;
     auto dis = std::uniform_int_distribution{1, 10};
-    {
-        std::array<std::jthread, N> threads{};
-        for (auto i = 0u; i < N; ++i) {
-            threads[i] = std::jthread{[&] {
-                auto const d = conc::call_in_critical_section(
-                    [&] { return std::chrono::milliseconds{dis(rng)}; });
-                std::this_thread::sleep_for(d);
-                conc::call_in_critical_section([&] { ++count; });
-            }};
-        }
+
+    std::array<std::thread, N> threads{};
+    for (auto i = 0u; i < N; ++i) {
+        threads[i] = std::thread{[&] {
+            auto const d = conc::call_in_critical_section(
+                [&] { return std::chrono::milliseconds{dis(rng)}; });
+            std::this_thread::sleep_for(d);
+            conc::call_in_critical_section([&] { ++count; });
+        }};
     }
+    for (auto i = 0u; i < N; ++i) {
+        threads[i].join();
+    }
+
     CHECK(count == N);
 }
 
@@ -56,20 +58,21 @@ TEST_CASE("standard policy allows different-ID critical_sections",
     auto &rng = get_rng();
     auto count = 0;
     auto dis = std::uniform_int_distribution{1, 10};
-    {
-        auto t1 = std::jthread{[&] {
-            auto const d = conc::call_in_critical_section<rng_CS>(
-                [&] { return std::chrono::milliseconds{dis(rng)}; });
-            std::this_thread::sleep_for(d);
-            conc::call_in_critical_section<count_CS>([&] { ++count; });
-        }};
-        auto t2 = std::jthread{[&] {
-            auto const d = conc::call_in_critical_section<rng_CS>(
-                [&] { return std::chrono::milliseconds{dis(rng)}; });
-            std::this_thread::sleep_for(d);
-            conc::call_in_critical_section<count_CS>([&] { ++count; });
-        }};
-    }
+
+    auto t1 = std::thread{[&] {
+        auto const d = conc::call_in_critical_section<rng_CS>(
+            [&] { return std::chrono::milliseconds{dis(rng)}; });
+        std::this_thread::sleep_for(d);
+        conc::call_in_critical_section<count_CS>([&] { ++count; });
+    }};
+    auto t2 = std::thread{[&] {
+        auto const d = conc::call_in_critical_section<rng_CS>(
+            [&] { return std::chrono::milliseconds{dis(rng)}; });
+        std::this_thread::sleep_for(d);
+        conc::call_in_critical_section<count_CS>([&] { ++count; });
+    }};
+    t1.join();
+    t2.join();
+
     CHECK(count == 2);
 }
-#endif
