@@ -3,10 +3,11 @@
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-#include <concepts>
 #include <cstdint>
 #include <thread>
+#include <type_traits>
 
+#if __cplusplus >= 202002L
 TEST_CASE("standard policy models concepts", "[atomic_standard_policy]") {
     static_assert(atomic::load_store_policy<atomic::detail::standard_policy>);
     static_assert(atomic::exchange_policy<atomic::detail::standard_policy>);
@@ -14,6 +15,7 @@ TEST_CASE("standard policy models concepts", "[atomic_standard_policy]") {
     static_assert(atomic::bitwise_policy<atomic::detail::standard_policy>);
     static_assert(atomic::policy<atomic::detail::standard_policy>);
 }
+#endif
 
 TEST_CASE("standard policy implements load", "[atomic_standard_policy]") {
     std::uint32_t val{17};
@@ -136,7 +138,7 @@ TEST_CASE("standard policy implements fetch_xor atomically",
 TEMPLATE_TEST_CASE("standard policy has normal types",
                    "[atomic_standard_policy]", bool, std::uint8_t,
                    std::uint16_t, std::uint32_t, std::uint64_t) {
-    static_assert(std::same_as<atomic::atomic_type_t<TestType>, TestType>);
+    static_assert(std::is_same_v<atomic::atomic_type_t<TestType>, TestType>);
 }
 
 TEMPLATE_TEST_CASE("standard policy has normal alignment",

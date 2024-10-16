@@ -14,8 +14,12 @@ else()
     cpmaddpackage("gh:intel/cicd-repo-infrastructure#3e2bef0")
 endif()
 
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 20)
+endif()
+
 add_library(concurrency INTERFACE)
-target_compile_features(concurrency INTERFACE cxx_std_20)
+target_compile_features(concurrency INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 
 target_sources(
     concurrency
