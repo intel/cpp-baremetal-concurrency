@@ -26,7 +26,7 @@ template <typename Mutex = std::mutex> class standard_policy {
   public:
     template <typename Uniq = void, std::invocable F, std::predicate... Pred>
         requires(sizeof...(Pred) < 2)
-    static auto call_in_critical_section(F &&f, auto &&...pred)
+    static auto call_in_critical_section(F &&f, Pred &&...pred)
         -> decltype(std::forward<F>(f)()) {
         while (true) {
             [[maybe_unused]] std::lock_guard l{m<Uniq>};

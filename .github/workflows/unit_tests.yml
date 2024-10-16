@@ -28,7 +28,7 @@ jobs:
       matrix:
         compiler: [clang, gcc]
         version: [12, 13, 16, 17, 18]
-        cxx_standard: [20]
+        cxx_standard: [17, 20]
         stdlib: [libstdc++, libc++]
         build_type: [Debug]
         include:
@@ -139,7 +139,7 @@ jobs:
       matrix:
         compiler: [clang]
         version: [14, 15]
-        cxx_standard: [20]
+        cxx_standard: [17, 20]
         stdlib: [libstdc++, libc++]
         build_type: [Debug]
         include:

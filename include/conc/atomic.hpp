@@ -2,8 +2,15 @@
 
 #include <conc/concepts.hpp>
 
-#include <concepts>
+#include <atomic>
 #include <memory>
+#include <type_traits>
+
+#if __cplusplus >= 202002L
+#define CPP20(...) __VA_ARGS__
+#else
+#define CPP20(...)
+#endif
 
 namespace atomic {
 namespace detail {
@@ -93,77 +100,96 @@ struct standard_policy {
 template <typename...> inline auto injected_policy = detail::standard_policy{};
 
 template <typename... DummyArgs, typename T>
-    requires(sizeof...(DummyArgs) == 0)
+CPP20(requires(sizeof...(DummyArgs) == 0))
 [[nodiscard]] auto load(T const &t,
                         std::memory_order mo = std::memory_order_seq_cst) -> T {
-    load_store_policy auto &p = injected_policy<DummyArgs...>;
+    CPP20(load_store_policy)
+    auto &p = injected_policy<DummyArgs...>;
     return p.load(t, mo);
 }
 
-template <typename... DummyArgs, typename T, std::convertible_to<T> U>
-    requires(sizeof...(DummyArgs) == 0)
+template <typename... DummyArgs, typename T, typename U,
+          typename = std::enable_if_t<std::is_convertible_v<U, T>>>
+CPP20(requires(sizeof...(DummyArgs) == 0))
 auto store(T &t, U value,
            std::memory_order mo = std::memory_order_seq_cst) -> void {
-    load_store_policy auto &p = injected_policy<DummyArgs...>;
+    CPP20(load_store_policy)
+    auto &p = injected_policy<DummyArgs...>;
     auto v = static_cast<T>(value);
     p.store(t, v, mo);
 }
 
-template <typename... DummyArgs, typename T, std::convertible_to<T> U>
-    requires(sizeof...(DummyArgs) == 0)
-[[nodiscard]] auto
-exchange(T &t, U value, std::memory_order mo = std::memory_order_seq_cst) -> T {
-    exchange_policy auto &p = injected_policy<DummyArgs...>;
+template <typename... DummyArgs, typename T, typename U,
+          typename = std::enable_if_t<std::is_convertible_v<U, T>>>
+CPP20(requires(sizeof...(DummyArgs) == 0))
+[[nodiscard]] auto exchange(
+    T &t, U value, std::memory_order mo = std::memory_order_seq_cst) -> T {
+    CPP20(exchange_policy)
+    auto &p = injected_policy<DummyArgs...>;
     auto v = static_cast<T>(value);
     return p.exchange(t, v, mo);
 }
 
-template <typename... DummyArgs, typename T, std::convertible_to<T> U>
-    requires(sizeof...(DummyArgs) == 0)
+template <typename... DummyArgs, typename T, typename U,
+          typename = std::enable_if_t<std::is_convertible_v<U, T>>>
+CPP20(requires(sizeof...(DummyArgs) == 0))
 auto fetch_add(T &t, U value,
                std::memory_order mo = std::memory_order_seq_cst) -> T {
-    add_sub_policy auto &p = injected_policy<DummyArgs...>;
+    CPP20(add_sub_policy)
+    auto &p = injected_policy<DummyArgs...>;
     return p.fetch_add(t, static_cast<T>(value), mo);
 }
 
-template <typename... DummyArgs, typename T, std::convertible_to<T> U>
-    requires(sizeof...(DummyArgs) == 0)
+template <typename... DummyArgs, typename T, typename U,
+          typename = std::enable_if_t<std::is_convertible_v<U, T>>>
+CPP20(requires(sizeof...(DummyArgs) == 0))
 auto fetch_sub(T &t, U value,
                std::memory_order mo = std::memory_order_seq_cst) -> T {
-    add_sub_policy auto &p = injected_policy<DummyArgs...>;
+    CPP20(add_sub_policy)
+    auto &p = injected_policy<DummyArgs...>;
     return p.fetch_sub(t, static_cast<T>(value), mo);
 }
 
-template <typename... DummyArgs, typename T, std::convertible_to<T> U>
-    requires(sizeof...(DummyArgs) == 0)
+template <typename... DummyArgs, typename T, typename U,
+          typename = std::enable_if_t<std::is_convertible_v<U, T>>>
+CPP20(requires(sizeof...(DummyArgs) == 0))
 auto fetch_and(T &t, U value,
                std::memory_order mo = std::memory_order_seq_cst) -> T {
-    bitwise_policy auto &p = injected_policy<DummyArgs...>;
+    CPP20(bitwise_policy)
+    auto &p = injected_policy<DummyArgs...>;
     return p.fetch_and(t, static_cast<T>(value), mo);
 }
 
-template <typename... DummyArgs, typename T, std::convertible_to<T> U>
-    requires(sizeof...(DummyArgs) == 0)
+template <typename... DummyArgs, typename T, typename U,
+          typename = std::enable_if_t<std::is_convertible_v<U, T>>>
+CPP20(requires(sizeof...(DummyArgs) == 0))
 auto fetch_or(T &t, U value,
               std::memory_order mo = std::memory_order_seq_cst) -> T {
-    bitwise_policy auto &p = injected_policy<DummyArgs...>;
+    CPP20(bitwise_policy)
+    auto &p = injected_policy<DummyArgs...>;
     return p.fetch_or(t, static_cast<T>(value), mo);
 }
 
-template <typename... DummyArgs, typename T, std::convertible_to<T> U>
-    requires(sizeof...(DummyArgs) == 0)
+template <typename... DummyArgs, typename T, typename U,
+          typename = std::enable_if_t<std::is_convertible_v<U, T>>>
+CPP20(requires(sizeof...(DummyArgs) == 0))
 auto fetch_xor(T &t, U value,
                std::memory_order mo = std::memory_order_seq_cst) -> T {
-    bitwise_policy auto &p = injected_policy<DummyArgs...>;
+    CPP20(bitwise_policy)
+    auto &p = injected_policy<DummyArgs...>;
     return p.fetch_xor(t, static_cast<T>(value), mo);
 }
 
-template <typename T> struct atomic_type : std::type_identity<T> {};
+template <typename T> struct atomic_type {
+    using type = T;
+};
 template <typename T> using atomic_type_t = typename atomic_type<T>::type;
 
 template <typename T>
 constexpr inline auto alignment_of = alignof(std::atomic<atomic_type_t<T>>);
 } // namespace atomic
+
+#undef CPP20
 
 #ifdef ATOMIC_CFG
 #include ATOMIC_CFG

@@ -1,5 +1,7 @@
 #pragma once
 
+#if __cplusplus >= 202002L
+
 #include <atomic>
 #include <concepts>
 
@@ -50,3 +52,5 @@ concept bitwise_policy =
 template <typename T>
 concept policy = exchange_policy<T> and add_sub_policy<T> and bitwise_policy<T>;
 } // namespace atomic
+
+#endif
