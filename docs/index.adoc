@@ -13,6 +13,135 @@ This C++ baremetal concurrency library provides a low-level API for operations
 that must be protected in a concurrent environment, without having to know
 platform details.
 
+=== Synopsis
+
+The following headers are available:
+
+* https://github.com/intel/cpp-baremetal-concurrency/blob/main/include/conc/atomic.hpp[`atomic.hpp`]
+* https://github.com/intel/cpp-baremetal-concurrency/blob/main/include/conc/concurrency.hpp[`concurrency.hpp`]
+
+== `atomic.hpp`
+
+`atomic.hpp` contains function templates in the `atomic` namespace. These
+functions are low-level atomic operations that can be used to implement the
+corresponding member functions on
+https://en.cppreference.com/w/cpp/atomic/atomic[`std::atomic`].
+
+[source,cpp]
+----
+template <typename T>
+[[nodiscard]] auto load(T const &t,
+                        std::memory_order mo = std::memory_order_seq_cst) -> T;
+
+template <typename T, typename U>
+auto store(T &t, U value,
+           std::memory_order mo = std::memory_order_seq_cst) -> void;
+
+template <typename T, typename U>
+[[nodiscard]] auto exchange(
+    T &t, U value, std::memory_order mo = std::memory_order_seq_cst) -> T;
+
+template <typename T, typename U>
+auto fetch_add(T &t, U value,
+               std::memory_order mo = std::memory_order_seq_cst) -> T;
+
+template <typename T, typename U>
+auto fetch_sub(T &t, U value,
+               std::memory_order mo = std::memory_order_seq_cst) -> T;
+
+template <typename T, typename U>
+auto fetch_and(T &t, U value,
+               std::memory_order mo = std::memory_order_seq_cst) -> T;
+
+template <typename T, typename U>
+auto fetch_or(T &t, U value,
+              std::memory_order mo = std::memory_order_seq_cst) -> T;
+
+template <typename T, typename U>
+auto fetch_xor(T &t, U value,
+               std::memory_order mo = std::memory_order_seq_cst) -> T;
+----
+
+=== Customization of atomic operations
+
+By default, the atomic interface surfaced in the `atomic` namespace is
+implemented by `atomic::standard_policy`, a policy class that has static
+functions corresponding to each of the above functions. And the
+`standard_policy` functions call
+https://llvm.org/docs/Atomics.html#libcalls-atomic[the compiler intrinsics] --
+the same for clang and GCC -- which also underlie the implementation of
+https://en.cppreference.com/w/cpp/atomic/atomic[`std::atomic`].
+
+However, it is possible to replace the atomic policy with a custom one. If
+`std::atomic` is not available on a particular platform, or atomic operations
+are limited or inefficient, a different policy (providing the above functions in
+the same way as `standard_policy`) can be injected by specializing
+`atomic::injected_policy`.
+
+[source,cpp]
+----
+#include <conc/atomic.hpp>
+
+struct custom_atomic_policy {
+    template <typename T>
+    [[nodiscard]] static auto load(
+        T const &t,
+        std::memory_order mo = std::memory_order_seq_cst) -> T;
+
+    // and similarly the other functions
+};
+
+template <> inline auto atomic::injected_policy<> = custom_atomic_policy{};
+----
+
+A custom policy may provide such operations as it can; if some are not
+provided, the corresponding global functions will not be available, but the ones
+for which an implementation is available will still work.
+
+NOTE: https://intel.github.io/cpp-std-extensions/#_atomic_hpp[`stdx::atomic`] is
+an implementation of `std::atomic` that uses the customizable atomic operations
+provided here.
+
+=== Custom type selection and alignment
+
+Some platforms require certain alignment of atomic types, or only support
+certain types with atomic instructions. Fine-grained control over alignment and
+type selection can be controlled by specializing `atomic::alignment_of` and
+`atomic::atomic_type`.
+
+[source,cpp]
+----
+// if platform atomic instructions work on 32-bit values only,
+// might as well implement an atomic<bool> as an atomic<std::uint32_t>
+template <> struct atomic::atomic_type<bool> {
+    using type = std::uint32_t;
+};
+
+// or, if only alignment is required, that can be directly specified
+template <>
+constexpr inline auto atomic::alignment_of<std::uint8_t> = std::size_t{4};
+----
+
+These specializations need to be provided early on in compilation where
+necessary, so a header file containing them can be passed as a definition
+(`ATOMIC_CFG`) on the compiler command line:
+
+[source,cmake]
+----
+target_compile_definitions(
+    my_app
+    PRIVATE -DATOMIC_CFG="${CMAKE_CURRENT_SOURCE_DIR}/atomic_cfg.hpp")
+----
+
+NOTE: https://intel.github.io/cpp-std-extensions/#_atomic_hpp[`stdx::atomic`]
+honours these type and alignment specializations such that e.g.
+`stdx::atomic<bool>` will be implemented with the correct alignment and/or
+platform instructions.
+
+== `concurrency.hpp`
+
+`concurrency.hpp` contains function templates in the `conc` namespace.
+
 [source,cpp]
 ----
 #include <conc/concurrency.hpp>
@@ -28,14 +157,14 @@ conc::call_in_critical_section(
        return true; });
 ----
 
-== Desktop concurrency vs the interrupt model
+=== Desktop concurrency vs the interrupt model
 
-On a microprocessor, there is only one form of critical section: turning off
-interrupts globally. Because this typically happens in a single-threaded
-environment, there is little to no efficiency concern. However as soon as
-multiple threads are introduced this becomes a problem. Having effectively a
-single global lock to protect every piece of data that can be modified
-concurrently, even data that are unrelated, is not a good idea.
+On a microcontroller, there may be only one form of critical section: turning
+off interrupts globally. This could typically be cheap and happen only in a
+single-threaded environment, so there is little to no efficiency concern.
+However as soon as multiple threads are introduced this becomes a problem.
+Having effectively a single global lock to protect every piece of data that can
+be modified concurrently, even data that are unrelated, is not a good idea.
 
 [source,cpp]
 ----
@@ -56,7 +185,7 @@ conc::call_in_critical_section(
 
 With a global critical section mechanism, two entirely separate pieces of code
 that touch distinct data may still contend for resources. On a single-threaded
-microprocessor this is not an issue; in a multithreaded environment, it is.
+microcontroller this is not an issue; in a multithreaded environment, it is.
 
 To get around this issue, critical section calls are by default distinct -- and
 the above code will _not_ cause contention -- but can be tagged with template
@@ -81,12 +210,13 @@ conc::call_in_critical_section<data_tag>(
 In this case, without tagging there would be a data race as two different
 threads may access `data` concurrently.
 
-== Re-entrancy
+=== Re-entrancy
 
 In general, re-locking the same mutex recursively is possible using
-`std::recursive_mutex` but it is almost universally considered bad design to
-have to rely on this. Such calls can always be refactored to protect the data
-without re-entrancy into the critical section.
+https://en.cppreference.com/w/cpp/thread/recursive_mutex[`std::recursive_mutex`]
+but it is almost universally considered bad design to have to rely on this. Such
+calls can always be refactored to protect the data without re-entrancy into the
+critical section.
 
 [source,cpp]
 ----
@@ -105,3 +235,39 @@ This code will cause a deadlock (even though `call_in_critical_section` is
 untagged) and should be refactored so that the access to `data` is protected for
 as small a time as possible, and no functions with potentially-unknown paths
 should be called inside the critical section.
+
+=== Customizing concurrency
+
+Using the same customization pattern as atomic operations do,
+`conc::call_in_critical_section` works by calling through a policy which can be
+customized by specializing `conc::injected_policy`. The default policy is
+`standard_policy` which uses
+https://intel.github.io/cpp-std-extensions/#_atomic_hpp[`std::mutex`] (if
+available) to provide a critical section.
+
+A suitable custom policy on a microcontroller may look something like this:
+
+[source,cpp]
+----
+struct [[nodiscard]] critical_section {
+  critical_section() { /* turn off interrupts */ }
+  ~critical_section() { /* turn on interrupts */ }
+};
+
+struct custom_policy {
+    // the first template argument identifies the "mutex"
+    // but on this platform we only have a global interrupt on/off switch
+    template <typename = void, std::invocable F, std::predicate... Pred>
+    static auto call_in_critical_section(F &&f, Pred &&...pred)
+        -> decltype(std::forward<F>(f)()) {
+        while (true) {
+            [[maybe_unused]] critical_section cs{};
+            if ((... and pred())) {
+                return std::forward<F>(f)();
+            }
+        }
+    }
+};
+
+template <> inline auto conc::injected_policy<> = custom_policy{};
+----
