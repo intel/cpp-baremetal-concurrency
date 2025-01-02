@@ -29,8 +29,8 @@ struct standard_policy {
                   __ATOMIC_CONSUME);
 
     template <typename T>
-    static auto load(T const &t,
-                     std::memory_order mo = std::memory_order_seq_cst) -> T {
+    __attribute__((always_inline, flatten)) static inline auto
+    load(T const &t, std::memory_order mo = std::memory_order_seq_cst) -> T {
         T ret{};
         __atomic_load(std::addressof(t), std::addressof(ret),
                       static_cast<int>(mo));
@@ -38,7 +38,7 @@ struct standard_policy {
     }
 
     template <typename T>
-    static auto
+    __attribute__((always_inline, flatten)) static inline auto
     store(T &t, T &value,
           std::memory_order mo = std::memory_order_seq_cst) -> void {
         __atomic_store(std::addressof(t), std::addressof(value),
@@ -46,7 +46,7 @@ struct standard_policy {
     }
 
     template <typename T>
-    static auto
+    __attribute__((always_inline, flatten)) static inline auto
     exchange(T &t, T &value,
              std::memory_order mo = std::memory_order_seq_cst) -> T {
         T ret{};
@@ -56,7 +56,7 @@ struct standard_policy {
     }
 
     template <typename T>
-    static auto
+    __attribute__((always_inline, flatten)) static inline auto
     fetch_add(T &t, T value,
               std::memory_order mo = std::memory_order_seq_cst) -> T {
         return __atomic_fetch_add(std::addressof(t), value,
@@ -64,7 +64,7 @@ struct standard_policy {
     }
 
     template <typename T>
-    static auto
+    __attribute__((always_inline, flatten)) static inline auto
     fetch_sub(T &t, T value,
               std::memory_order mo = std::memory_order_seq_cst) -> T {
         return __atomic_fetch_sub(std::addressof(t), value,
@@ -72,7 +72,7 @@ struct standard_policy {
     }
 
     template <typename T>
-    static auto
+    __attribute__((always_inline, flatten)) static inline auto
     fetch_and(T &t, T value,
               std::memory_order mo = std::memory_order_seq_cst) -> T {
         return __atomic_fetch_and(std::addressof(t), value,
@@ -80,7 +80,7 @@ struct standard_policy {
     }
 
     template <typename T>
-    static auto
+    __attribute__((always_inline, flatten)) static inline auto
     fetch_or(T &t, T value,
              std::memory_order mo = std::memory_order_seq_cst) -> T {
         return __atomic_fetch_or(std::addressof(t), value,
@@ -88,7 +88,7 @@ struct standard_policy {
     }
 
     template <typename T>
-    static auto
+    __attribute__((always_inline, flatten)) static inline auto
     fetch_xor(T &t, T value,
               std::memory_order mo = std::memory_order_seq_cst) -> T {
         return __atomic_fetch_xor(std::addressof(t), value,
@@ -101,8 +101,9 @@ template <typename...> inline auto injected_policy = detail::standard_policy{};
 
 template <typename... DummyArgs, typename T>
 CPP20(requires(sizeof...(DummyArgs) == 0))
-[[nodiscard]] auto load(T const &t,
-                        std::memory_order mo = std::memory_order_seq_cst) -> T {
+[[nodiscard]]
+__attribute__((always_inline, flatten)) inline auto load(
+    T const &t, std::memory_order mo = std::memory_order_seq_cst) -> T {
     CPP20(load_store_policy)
     auto &p = injected_policy<DummyArgs...>;
     return p.load(t, mo);
@@ -111,8 +112,8 @@ CPP20(requires(sizeof...(DummyArgs) == 0))
 template <typename... DummyArgs, typename T, typename U,
           typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 CPP20(requires(sizeof...(DummyArgs) == 0))
-auto store(T &t, U value,
-           std::memory_order mo = std::memory_order_seq_cst) -> void {
+__attribute__((always_inline, flatten)) inline auto store(
+    T &t, U value, std::memory_order mo = std::memory_order_seq_cst) -> void {
     CPP20(load_store_policy)
     auto &p = injected_policy<DummyArgs...>;
     auto v = static_cast<T>(value);
@@ -122,7 +123,8 @@ auto store(T &t, U value,
 template <typename... DummyArgs, typename T, typename U,
           typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 CPP20(requires(sizeof...(DummyArgs) == 0))
-[[nodiscard]] auto exchange(
+[[nodiscard]]
+__attribute__((always_inline, flatten)) inline auto exchange(
     T &t, U value, std::memory_order mo = std::memory_order_seq_cst) -> T {
     CPP20(exchange_policy)
     auto &p = injected_policy<DummyArgs...>;
@@ -133,8 +135,8 @@ CPP20(requires(sizeof...(DummyArgs) == 0))
 template <typename... DummyArgs, typename T, typename U,
           typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 CPP20(requires(sizeof...(DummyArgs) == 0))
-auto fetch_add(T &t, U value,
-               std::memory_order mo = std::memory_order_seq_cst) -> T {
+__attribute__((always_inline, flatten)) inline auto fetch_add(
+    T &t, U value, std::memory_order mo = std::memory_order_seq_cst) -> T {
     CPP20(add_sub_policy)
     auto &p = injected_policy<DummyArgs...>;
     return p.fetch_add(t, static_cast<T>(value), mo);
@@ -143,8 +145,8 @@ auto fetch_add(T &t, U value,
 template <typename... DummyArgs, typename T, typename U,
           typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 CPP20(requires(sizeof...(DummyArgs) == 0))
-auto fetch_sub(T &t, U value,
-               std::memory_order mo = std::memory_order_seq_cst) -> T {
+__attribute__((always_inline, flatten)) inline auto fetch_sub(
+    T &t, U value, std::memory_order mo = std::memory_order_seq_cst) -> T {
     CPP20(add_sub_policy)
     auto &p = injected_policy<DummyArgs...>;
     return p.fetch_sub(t, static_cast<T>(value), mo);
@@ -153,8 +155,8 @@ auto fetch_sub(T &t, U value,
 template <typename... DummyArgs, typename T, typename U,
           typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 CPP20(requires(sizeof...(DummyArgs) == 0))
-auto fetch_and(T &t, U value,
-               std::memory_order mo = std::memory_order_seq_cst) -> T {
+__attribute__((always_inline, flatten)) inline auto fetch_and(
+    T &t, U value, std::memory_order mo = std::memory_order_seq_cst) -> T {
     CPP20(bitwise_policy)
     auto &p = injected_policy<DummyArgs...>;
     return p.fetch_and(t, static_cast<T>(value), mo);
@@ -163,8 +165,8 @@ auto fetch_and(T &t, U value,
 template <typename... DummyArgs, typename T, typename U,
           typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 CPP20(requires(sizeof...(DummyArgs) == 0))
-auto fetch_or(T &t, U value,
-              std::memory_order mo = std::memory_order_seq_cst) -> T {
+__attribute__((always_inline, flatten)) inline auto fetch_or(
+    T &t, U value, std::memory_order mo = std::memory_order_seq_cst) -> T {
     CPP20(bitwise_policy)
     auto &p = injected_policy<DummyArgs...>;
     return p.fetch_or(t, static_cast<T>(value), mo);
@@ -173,8 +175,8 @@ auto fetch_or(T &t, U value,
 template <typename... DummyArgs, typename T, typename U,
           typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 CPP20(requires(sizeof...(DummyArgs) == 0))
-auto fetch_xor(T &t, U value,
-               std::memory_order mo = std::memory_order_seq_cst) -> T {
+__attribute__((always_inline, flatten)) inline auto fetch_xor(
+    T &t, U value, std::memory_order mo = std::memory_order_seq_cst) -> T {
     CPP20(bitwise_policy)
     auto &p = injected_policy<DummyArgs...>;
     return p.fetch_xor(t, static_cast<T>(value), mo);
