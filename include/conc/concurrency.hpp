@@ -27,8 +27,8 @@ template <typename Mutex = std::mutex> class standard_policy {
     template <typename Uniq = void, std::invocable F, std::predicate... Pred>
         requires(sizeof...(Pred) < 2)
     __attribute__((always_inline, flatten)) static inline auto
-    call_in_critical_section(F &&f,
-                             Pred &&...pred) -> decltype(std::forward<F>(f)()) {
+    call_in_critical_section(F &&f, Pred &&...pred)
+        -> decltype(std::forward<F>(f)()) {
         while (true) {
             [[maybe_unused]] std::lock_guard l{m<Uniq>};
             if ((... and pred())) {
@@ -58,8 +58,8 @@ template <typename Uniq = decltype([] {}), typename... DummyArgs,
           std::invocable F, std::predicate... Pred>
     requires(sizeof...(DummyArgs) == 0 and sizeof...(Pred) < 2)
 __attribute__((always_inline, flatten)) inline auto
-call_in_critical_section(F &&f,
-                         Pred &&...pred) -> decltype(std::forward<F>(f)()) {
+call_in_critical_section(F &&f, Pred &&...pred)
+    -> decltype(std::forward<F>(f)()) {
     policy auto &p = injected_policy<DummyArgs...>;
     return p.template call_in_critical_section<Uniq>(
         std::forward<F>(f), std::forward<Pred>(pred)...);
