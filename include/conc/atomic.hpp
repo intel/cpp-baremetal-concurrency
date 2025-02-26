@@ -39,16 +39,16 @@ struct standard_policy {
 
     template <typename T>
     __attribute__((always_inline, flatten)) static inline auto
-    store(T &t, T &value,
-          std::memory_order mo = std::memory_order_seq_cst) -> void {
+    store(T &t, T &value, std::memory_order mo = std::memory_order_seq_cst)
+        -> void {
         __atomic_store(std::addressof(t), std::addressof(value),
                        static_cast<int>(mo));
     }
 
     template <typename T>
     __attribute__((always_inline, flatten)) static inline auto
-    exchange(T &t, T &value,
-             std::memory_order mo = std::memory_order_seq_cst) -> T {
+    exchange(T &t, T &value, std::memory_order mo = std::memory_order_seq_cst)
+        -> T {
         T ret{};
         __atomic_exchange(std::addressof(t), std::addressof(value),
                           std::addressof(ret), static_cast<int>(mo));
@@ -57,40 +57,40 @@ struct standard_policy {
 
     template <typename T>
     __attribute__((always_inline, flatten)) static inline auto
-    fetch_add(T &t, T value,
-              std::memory_order mo = std::memory_order_seq_cst) -> T {
+    fetch_add(T &t, T value, std::memory_order mo = std::memory_order_seq_cst)
+        -> T {
         return __atomic_fetch_add(std::addressof(t), value,
                                   static_cast<int>(mo));
     }
 
     template <typename T>
     __attribute__((always_inline, flatten)) static inline auto
-    fetch_sub(T &t, T value,
-              std::memory_order mo = std::memory_order_seq_cst) -> T {
+    fetch_sub(T &t, T value, std::memory_order mo = std::memory_order_seq_cst)
+        -> T {
         return __atomic_fetch_sub(std::addressof(t), value,
                                   static_cast<int>(mo));
     }
 
     template <typename T>
     __attribute__((always_inline, flatten)) static inline auto
-    fetch_and(T &t, T value,
-              std::memory_order mo = std::memory_order_seq_cst) -> T {
+    fetch_and(T &t, T value, std::memory_order mo = std::memory_order_seq_cst)
+        -> T {
         return __atomic_fetch_and(std::addressof(t), value,
                                   static_cast<int>(mo));
     }
 
     template <typename T>
     __attribute__((always_inline, flatten)) static inline auto
-    fetch_or(T &t, T value,
-             std::memory_order mo = std::memory_order_seq_cst) -> T {
+    fetch_or(T &t, T value, std::memory_order mo = std::memory_order_seq_cst)
+        -> T {
         return __atomic_fetch_or(std::addressof(t), value,
                                  static_cast<int>(mo));
     }
 
     template <typename T>
     __attribute__((always_inline, flatten)) static inline auto
-    fetch_xor(T &t, T value,
-              std::memory_order mo = std::memory_order_seq_cst) -> T {
+    fetch_xor(T &t, T value, std::memory_order mo = std::memory_order_seq_cst)
+        -> T {
         return __atomic_fetch_xor(std::addressof(t), value,
                                   static_cast<int>(mo));
     }

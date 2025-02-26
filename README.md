@@ -15,7 +15,7 @@ concurrent execution.
 C++20 is required to use the `conc` namespace functionality; C++17 will suffice
 for the `atomic` namespace functionality. The following compilers are supported:
  
-- clang 14 through 18
+- clang 14 through 19
 - gcc 12 through 13
 
 See the [full documentation](https://intel.github.io/cpp-baremetal-concurrency/).

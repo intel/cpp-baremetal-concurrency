@@ -5,14 +5,14 @@
 namespace {
 struct good_conc_policy {
     template <typename F>
-    [[nodiscard]] constexpr static auto
-    call_in_critical_section(F &&f) -> decltype(auto) {
+    [[nodiscard]] constexpr static auto call_in_critical_section(F &&f)
+        -> decltype(auto) {
         return std::forward<F>(f)();
     }
 
     template <typename F>
-    [[nodiscard]] constexpr static auto
-    call_in_critical_section(F &&f, auto &&) -> decltype(auto) {
+    [[nodiscard]] constexpr static auto call_in_critical_section(F &&f, auto &&)
+        -> decltype(auto) {
         return std::forward<F>(f)();
     }
 };
@@ -56,27 +56,27 @@ struct atomic_exchange_policy : atomic_load_store_policy {
 
 struct atomic_add_sub_policy : atomic_load_store_policy {
     template <typename T>
-    static auto
-    fetch_add(T &t, T &value,
-              std::memory_order mo = std::memory_order_seq_cst) -> T;
+    static auto fetch_add(T &t, T &value,
+                          std::memory_order mo = std::memory_order_seq_cst)
+        -> T;
     template <typename T>
-    static auto
-    fetch_sub(T &t, T &value,
-              std::memory_order mo = std::memory_order_seq_cst) -> T;
+    static auto fetch_sub(T &t, T &value,
+                          std::memory_order mo = std::memory_order_seq_cst)
+        -> T;
 };
 
 struct atomic_bitwise_policy : atomic_load_store_policy {
     template <typename T>
-    static auto
-    fetch_and(T &t, T &value,
-              std::memory_order mo = std::memory_order_seq_cst) -> T;
+    static auto fetch_and(T &t, T &value,
+                          std::memory_order mo = std::memory_order_seq_cst)
+        -> T;
     template <typename T>
     static auto fetch_or(T &t, T &value,
                          std::memory_order mo = std::memory_order_seq_cst) -> T;
     template <typename T>
-    static auto
-    fetch_xor(T &t, T &value,
-              std::memory_order mo = std::memory_order_seq_cst) -> T;
+    static auto fetch_xor(T &t, T &value,
+                          std::memory_order mo = std::memory_order_seq_cst)
+        -> T;
 };
 
 struct atomic_policy : atomic_exchange_policy,
@@ -113,9 +113,9 @@ struct bad_load_store_policy_no_memory_order {
 
 struct bad_exchange_policy_no_return : atomic_load_store_policy {
     template <typename T>
-    static auto
-    exchange(T &t, T &value,
-             std::memory_order mo = std::memory_order_seq_cst) -> void;
+    static auto exchange(T &t, T &value,
+                         std::memory_order mo = std::memory_order_seq_cst)
+        -> void;
 };
 } // namespace
 

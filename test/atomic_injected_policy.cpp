@@ -9,8 +9,8 @@
 namespace {
 struct custom_policy {
     template <typename T>
-    static auto load(T const &t,
-                     std::memory_order = std::memory_order_seq_cst) -> T {
+    static auto load(T const &t, std::memory_order = std::memory_order_seq_cst)
+        -> T {
         return t;
     }
     template <typename T>
