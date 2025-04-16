@@ -6,6 +6,10 @@
 #include <memory>
 #include <type_traits>
 
+// NOLINTBEGIN(modernize-use-constraints)
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+// NOLINTBEGIN(cppcoreguidelines-pro-type-vararg)
+
 #if __cplusplus >= 202002L
 #define CPP20(...) __VA_ARGS__
 #else
@@ -192,6 +196,10 @@ constexpr inline auto alignment_of = alignof(std::atomic<atomic_type_t<T>>);
 } // namespace atomic
 
 #undef CPP20
+
+// NOLINTEND(cppcoreguidelines-pro-type-vararg)
+// NOLINTEND(cppcoreguidelines-macro-usage)
+// NOLINTEND(modernize-use-constraints)
 
 #ifdef ATOMIC_CFG
 #include ATOMIC_CFG
