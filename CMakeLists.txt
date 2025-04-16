@@ -30,6 +30,7 @@ target_sources(
               BASE_DIRS
               include
               FILES
+              include/conc/atomic.hpp
               include/conc/concepts.hpp
               include/conc/concurrency.hpp)
 
