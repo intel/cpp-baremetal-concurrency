@@ -32,10 +32,10 @@ struct not_a_policy {};
 } // namespace
 
 TEST_CASE("concurrency_policy", "[concepts]") {
-    static_assert(conc::policy<good_conc_policy>);
-    static_assert(not conc::policy<not_a_policy>);
-    static_assert(not conc::policy<bad_conc_policy_return_decay>);
-    static_assert(not conc::policy<bad_conc_policy_no_pred>);
+    STATIC_REQUIRE(conc::policy<good_conc_policy>);
+    STATIC_REQUIRE(not conc::policy<not_a_policy>);
+    STATIC_REQUIRE(not conc::policy<bad_conc_policy_return_decay>);
+    STATIC_REQUIRE(not conc::policy<bad_conc_policy_no_pred>);
 }
 
 namespace {
@@ -85,12 +85,12 @@ struct atomic_policy : atomic_exchange_policy,
 } // namespace
 
 TEST_CASE("good atomic policies", "[concepts]") {
-    static_assert(atomic::load_store_policy<atomic_load_store_policy>);
-    static_assert(atomic::exchange_policy<atomic_exchange_policy>);
-    static_assert(atomic::add_sub_policy<atomic_add_sub_policy>);
-    static_assert(atomic::bitwise_policy<atomic_bitwise_policy>);
-    static_assert(atomic::policy<atomic_policy>);
-    static_assert(not atomic::policy<not_a_policy>);
+    STATIC_REQUIRE(atomic::load_store_policy<atomic_load_store_policy>);
+    STATIC_REQUIRE(atomic::exchange_policy<atomic_exchange_policy>);
+    STATIC_REQUIRE(atomic::add_sub_policy<atomic_add_sub_policy>);
+    STATIC_REQUIRE(atomic::bitwise_policy<atomic_bitwise_policy>);
+    STATIC_REQUIRE(atomic::policy<atomic_policy>);
+    STATIC_REQUIRE(not atomic::policy<not_a_policy>);
 }
 
 namespace {
@@ -120,10 +120,11 @@ struct bad_exchange_policy_no_return : atomic_load_store_policy {
 } // namespace
 
 TEST_CASE("bad atomic policies", "[concepts]") {
-    static_assert(not atomic::load_store_policy<bad_load_store_policy_no_load>);
-    static_assert(
+    STATIC_REQUIRE(
+        not atomic::load_store_policy<bad_load_store_policy_no_load>);
+    STATIC_REQUIRE(
         not atomic::load_store_policy<bad_load_store_policy_no_store>);
-    static_assert(
+    STATIC_REQUIRE(
         not atomic::load_store_policy<bad_load_store_policy_no_memory_order>);
-    static_assert(not atomic::exchange_policy<bad_exchange_policy_no_return>);
+    STATIC_REQUIRE(not atomic::exchange_policy<bad_exchange_policy_no_return>);
 }

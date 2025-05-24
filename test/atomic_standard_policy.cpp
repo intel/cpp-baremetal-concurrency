@@ -9,11 +9,11 @@
 
 #if __cplusplus >= 202002L
 TEST_CASE("standard policy models concepts", "[atomic_standard_policy]") {
-    static_assert(atomic::load_store_policy<atomic::detail::standard_policy>);
-    static_assert(atomic::exchange_policy<atomic::detail::standard_policy>);
-    static_assert(atomic::add_sub_policy<atomic::detail::standard_policy>);
-    static_assert(atomic::bitwise_policy<atomic::detail::standard_policy>);
-    static_assert(atomic::policy<atomic::detail::standard_policy>);
+    STATIC_REQUIRE(atomic::load_store_policy<atomic::detail::standard_policy>);
+    STATIC_REQUIRE(atomic::exchange_policy<atomic::detail::standard_policy>);
+    STATIC_REQUIRE(atomic::add_sub_policy<atomic::detail::standard_policy>);
+    STATIC_REQUIRE(atomic::bitwise_policy<atomic::detail::standard_policy>);
+    STATIC_REQUIRE(atomic::policy<atomic::detail::standard_policy>);
 }
 #endif
 
@@ -138,11 +138,11 @@ TEST_CASE("standard policy implements fetch_xor atomically",
 TEMPLATE_TEST_CASE("standard policy has normal types",
                    "[atomic_standard_policy]", bool, std::uint8_t,
                    std::uint16_t, std::uint32_t, std::uint64_t) {
-    static_assert(std::is_same_v<atomic::atomic_type_t<TestType>, TestType>);
+    STATIC_REQUIRE(std::is_same_v<atomic::atomic_type_t<TestType>, TestType>);
 }
 
 TEMPLATE_TEST_CASE("standard policy has normal alignment",
                    "[atomic_standard_policy]", bool, std::uint8_t,
                    std::uint16_t, std::uint32_t, std::uint64_t) {
-    static_assert(atomic::alignment_of<TestType> == alignof(TestType));
+    STATIC_REQUIRE(atomic::alignment_of<TestType> == alignof(TestType));
 }

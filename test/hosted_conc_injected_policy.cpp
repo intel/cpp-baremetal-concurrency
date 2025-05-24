@@ -38,11 +38,11 @@ struct custom_policy {
 template <> inline auto conc::injected_policy<> = custom_policy{};
 
 TEST_CASE("standard policy models concept", "[hosted_injected_policy]") {
-    static_assert(conc::policy<conc::detail::standard_policy<>>);
+    STATIC_REQUIRE(conc::policy<conc::detail::standard_policy<>>);
 }
 
 TEST_CASE("custom policy models concept", "[hosted_injected_policy]") {
-    static_assert(conc::policy<custom_policy>);
+    STATIC_REQUIRE(conc::policy<custom_policy>);
 }
 
 TEST_CASE("injected custom policy is used", "[hosted_injected_policy]") {
