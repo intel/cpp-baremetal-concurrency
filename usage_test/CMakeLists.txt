@@ -11,7 +11,7 @@ cpmaddpackage(NAME conc SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/.." GIT_TAG HEAD)
 
 add_executable(app main.cpp)
 target_link_libraries(app PRIVATE concurrency)
-if(SIMULATE_FREESTANDING)
+if(CPP_IMPLEMENTATION STREQUAL "FREESTANDING")
     target_compile_definitions(app PRIVATE SIMULATE_FREESTANDING)
     target_compile_options(app PRIVATE -ffreestanding)
 endif()
