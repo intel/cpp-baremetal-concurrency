@@ -35,7 +35,7 @@ struct standard_policy {
     template <typename T>
     __attribute__((always_inline, flatten)) static inline auto
     load(T const &t, std::memory_order mo = std::memory_order_seq_cst) -> T {
-        T ret{};
+        T ret;
         __atomic_load(std::addressof(t), std::addressof(ret),
                       static_cast<int>(mo));
         return ret;
@@ -53,7 +53,7 @@ struct standard_policy {
     __attribute__((always_inline, flatten)) static inline auto
     exchange(T &t, T &value, std::memory_order mo = std::memory_order_seq_cst)
         -> T {
-        T ret{};
+        T ret;
         __atomic_exchange(std::addressof(t), std::addressof(value),
                           std::addressof(ret), static_cast<int>(mo));
         return ret;

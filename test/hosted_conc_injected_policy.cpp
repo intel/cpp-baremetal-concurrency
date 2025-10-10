@@ -46,11 +46,11 @@ TEST_CASE("custom policy models concept", "[hosted_injected_policy]") {
 }
 
 TEST_CASE("injected custom policy is used", "[hosted_injected_policy]") {
-    custom_policy::count = 0;
+    auto c = custom_policy::count.load();
     conc::call_in_critical_section([] {});
-    CHECK(custom_policy::count == 1);
+    CHECK(custom_policy::count - c == 1);
     conc::call_in_critical_section([] {}, [] { return true; });
-    CHECK(custom_policy::count == 2);
+    CHECK(custom_policy::count - c == 2);
 }
 
 TEST_CASE("injected custom policy is used before definition",
@@ -61,11 +61,11 @@ TEST_CASE("injected custom policy is used before definition",
 }
 
 TEST_CASE("predicate is used", "[hosted_injected_policy]") {
-    auto predicate_used = false;
+    auto predicate_used = 0;
     conc::call_in_critical_section([] {},
                                    [&] {
-                                       predicate_used = true;
+                                       ++predicate_used;
                                        return true;
                                    });
-    CHECK(predicate_used);
+    CHECK(predicate_used == 1);
 }

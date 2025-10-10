@@ -24,6 +24,7 @@ TEST_CASE("standard policy implements load", "[atomic_standard_policy]") {
 
 TEST_CASE("standard policy implements store", "[atomic_standard_policy]") {
     std::uint32_t val{17};
+    CHECK(atomic::load(val) == 17);
     atomic::store(val, 1337);
     CHECK(val == 1337);
 }
@@ -31,7 +32,10 @@ TEST_CASE("standard policy implements store", "[atomic_standard_policy]") {
 TEST_CASE("standard policy implements load and store atomically",
           "[atomic_standard_policy]") {
     std::uint32_t val{17};
-    auto t1 = std::thread([&] { [[maybe_unused]] auto x = atomic::load(val); });
+    auto t1 = std::thread([&] {
+        auto x = atomic::load(val);
+        CHECK((x == 17 or x == 1337));
+    });
     auto t2 = std::thread([&] { atomic::store(val, 1337); });
     t1.join();
     t2.join();
@@ -47,7 +51,10 @@ TEST_CASE("standard policy implements exchange", "[atomic_standard_policy]") {
 TEST_CASE("standard policy implements exchange atomically",
           "[atomic_standard_policy]") {
     std::uint32_t val{17};
-    auto t1 = std::thread([&] { [[maybe_unused]] auto x = atomic::load(val); });
+    auto t1 = std::thread([&] {
+        auto x = atomic::load(val);
+        CHECK((x == 17 or x == 1337));
+    });
     auto t2 = std::thread([&] { CHECK(atomic::exchange(val, 1337) == 17); });
     t1.join();
     t2.join();
@@ -63,7 +70,10 @@ TEST_CASE("standard policy implements fetch_add", "[atomic_standard_policy]") {
 TEST_CASE("standard policy implements fetch_add atomically",
           "[atomic_standard_policy]") {
     std::uint32_t val{17};
-    auto t1 = std::thread([&] { [[maybe_unused]] auto x = atomic::load(val); });
+    auto t1 = std::thread([&] {
+        auto x = atomic::load(val);
+        CHECK((x == 17 or x == 18));
+    });
     auto t2 = std::thread([&] { CHECK(atomic::fetch_add(val, 1) == 17); });
     t1.join();
     t2.join();
@@ -79,7 +89,10 @@ TEST_CASE("standard policy implements fetch_sub", "[atomic_standard_policy]") {
 TEST_CASE("standard policy implements fetch_sub atomically",
           "[atomic_standard_policy]") {
     std::uint32_t val{17};
-    auto t1 = std::thread([&] { [[maybe_unused]] auto x = atomic::load(val); });
+    auto t1 = std::thread([&] {
+        auto x = atomic::load(val);
+        CHECK((x == 17 or x == 16));
+    });
     auto t2 = std::thread([&] { CHECK(atomic::fetch_sub(val, 1) == 17); });
     t1.join();
     t2.join();
@@ -95,7 +108,10 @@ TEST_CASE("standard policy implements fetch_and", "[atomic_standard_policy]") {
 TEST_CASE("standard policy implements fetch_and atomically",
           "[atomic_standard_policy]") {
     std::uint32_t val{0b101};
-    auto t1 = std::thread([&] { [[maybe_unused]] auto x = atomic::load(val); });
+    auto t1 = std::thread([&] {
+        auto x = atomic::load(val);
+        CHECK((x == 0b101 or x == 0));
+    });
     auto t2 =
         std::thread([&] { CHECK(atomic::fetch_and(val, 0b10) == 0b101); });
     t1.join();
@@ -112,7 +128,10 @@ TEST_CASE("standard policy implements fetch_or", "[atomic_standard_policy]") {
 TEST_CASE("standard policy implements fetch_or atomically",
           "[atomic_standard_policy]") {
     std::uint32_t val{0b101};
-    auto t1 = std::thread([&] { [[maybe_unused]] auto x = atomic::load(val); });
+    auto t1 = std::thread([&] {
+        auto x = atomic::load(val);
+        CHECK((x == 0b101 or x == 0b111));
+    });
     auto t2 = std::thread([&] { CHECK(atomic::fetch_or(val, 0b10) == 0b101); });
     t1.join();
     t2.join();
@@ -128,7 +147,10 @@ TEST_CASE("standard policy implements fetch_xor", "[atomic_standard_policy]") {
 TEST_CASE("standard policy implements fetch_xor atomically",
           "[atomic_standard_policy]") {
     std::uint32_t val{0b101};
-    auto t1 = std::thread([&] { [[maybe_unused]] auto x = atomic::load(val); });
+    auto t1 = std::thread([&] {
+        auto x = atomic::load(val);
+        CHECK((x == 0b101 or x == 0b100));
+    });
     auto t2 = std::thread([&] { CHECK(atomic::fetch_xor(val, 0b1) == 0b101); });
     t1.join();
     t2.join();
