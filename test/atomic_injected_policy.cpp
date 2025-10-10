@@ -36,8 +36,9 @@ TEST_CASE("injected policy implements load", "[atomic_injected_policy]") {
 
 TEST_CASE("injected policy implements store", "[atomic_injected_policy]") {
     std::uint32_t val{17};
+    CHECK(atomic::load(val) == 17);
     atomic::store(val, 1337);
-    CHECK(val == 1337);
+    CHECK(atomic::load(val) == 1337);
 }
 
 TEST_CASE("injected policy can inject different atomic types",
