@@ -22,11 +22,13 @@ if(${CMAKE_CXX_STANDARD} GREATER_EQUAL 20)
     add_tests(
         FILES
         conc_standard_policy
+        conc_test_policy
         concepts
         freestanding_conc_injected_policy
         hosted_conc_injected_policy
         MULL_EXCLUSIONS
-        conc_standard_policy)
+        conc_standard_policy
+        conc_test_policy)
 
     add_compile_fail_test(fail_no_conc_policy.cpp LIBRARIES concurrency)
 endif()
