@@ -1,12 +1,13 @@
 #pragma once
 
-#ifdef SIMULATE_FREESTANDING
+#include <conc/concepts.hpp>
+#include <conc/detail/freestanding.hpp>
+
+#ifdef CONC_FREESTANDING
 #define HAS_MUTEX 0
 #else
 #define HAS_MUTEX __has_include(<mutex>)
 #endif
-
-#include <conc/concepts.hpp>
 
 #if HAS_MUTEX
 #include <mutex>

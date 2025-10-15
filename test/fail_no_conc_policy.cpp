@@ -1,4 +1,4 @@
-#define SIMULATE_FREESTANDING
+#define CONC_FREESTANDING
 
 #include <conc/concurrency.hpp>
 

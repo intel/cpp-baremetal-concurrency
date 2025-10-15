@@ -32,7 +32,8 @@ target_sources(
               FILES
               include/conc/atomic.hpp
               include/conc/concepts.hpp
-              include/conc/concurrency.hpp)
+              include/conc/concurrency.hpp
+              include/conc/detail/freestanding.hpp)
 
 if(PROJECT_IS_TOP_LEVEL)
     add_docs(docs)
