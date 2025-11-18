@@ -12,7 +12,7 @@ on:
 env:
   DEBIAN_FRONTEND: noninteractive
   CMAKE_GENERATOR: Ninja
-  DEFAULT_CXX_STANDARD: 20
+  DEFAULT_CXX_STANDARD: 23
   DEFAULT_LLVM_VERSION: 21
   DEFAULT_GCC_VERSION: 14
   MULL_LLVM_MAJOR_VERSION: 19
@@ -30,8 +30,8 @@ jobs:
       fail-fast: false
       matrix:
         compiler: [clang, gcc]
-        version: [12, 13, 14, 16, 17, 18, 19, 20, 21]
-        cxx_standard: [17, 20]
+        version: [12, 13, 14, 18, 19, 20, 21]
+        cxx_standard: [23]
         stdlib: [libstdc++, libc++]
         build_type: [Debug]
         include:
@@ -75,24 +75,6 @@ jobs:
             stdlib: libc++
             install: wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && sudo ./llvm.sh 18 && sudo apt install -y libc++-18-dev libc++abi-18-dev
             cxx_flags: "-stdlib=libc++"
-          - version: 17
-            compiler: clang
-            install: sudo apt update && sudo apt install -y clang-17
-            toolchain_root: "/usr/lib/llvm-17"
-          - version: 17
-            compiler: clang
-            stdlib: libc++
-            install: sudo apt update && sudo apt install -y clang-17 libc++-17-dev libc++abi-17-dev
-            cxx_flags: "-stdlib=libc++"
-          - version: 16
-            compiler: clang
-            install: sudo apt update && sudo apt install -y clang-16
-            toolchain_root: "/usr/lib/llvm-16"
-          - version: 16
-            compiler: clang
-            stdlib: libc++
-            install: sudo apt update && sudo apt install -y clang-16 libc++-16-dev libc++abi-16-dev
-            cxx_flags: "-stdlib=libc++"
           - compiler: gcc
             toolchain_root: "/usr"
             cxx_flags: ""
@@ -121,10 +103,6 @@ jobs:
             version: 19
           - compiler: gcc
             version: 18
-          - compiler: gcc
-            version: 17
-          - compiler: gcc
-            version: 16
           - compiler: clang
             version: 14
           - compiler: clang
@@ -133,85 +111,6 @@ jobs:
             version: 12
           - compiler: gcc
             stdlib: libc++
-
-    steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-
-      - name: Install build tools
-        run: |
-          ${{ matrix.install }}
-          sudo apt install -y ninja-build
-
-      - name: Restore CPM cache
-        env:
-          cache-name: cpm-cache-0
-        id: cpm-cache-restore
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          path: ~/cpm-cache
-          key: ${{runner.os}}-${{env.cache-name}}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
-          restore-keys: |
-            ${{runner.os}}-${{env.cache-name}}-
-
-      - name: Configure CMake
-        env:
-          CC: ${{matrix.toolchain_root}}/bin/${{matrix.cc}}
-          CXX: ${{matrix.toolchain_root}}/bin/${{matrix.cxx}}
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_CXX_STANDARD=${{matrix.cxx_standard}} -DCMAKE_CXX_FLAGS_INIT=${{matrix.cxx_flags}} -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCPM_SOURCE_CACHE=~/cpm-cache
-
-      - name: Save CPM cache
-        env:
-          cache-name: cpm-cache-0
-        if: steps.cpm-cache-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          path: ~/cpm-cache
-          key: ${{runner.os}}-${{env.cache-name}}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
-
-      - name: Build Unit Tests
-        run: cmake --build ${{github.workspace}}/build --config ${{matrix.build_type}} -v -t build_unit_tests
-
-      - name: Test
-        working-directory: ${{github.workspace}}/build
-        run: ctest --output-on-failure -j $(nproc) -C ${{matrix.build_type}}
-
-  build_and_test_22:
-    runs-on: ${{ github.repository_owner == 'intel' && 'intel-' || '' }}ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix:
-        compiler: [clang]
-        version: [14, 15]
-        cxx_standard: [17, 20]
-        stdlib: [libstdc++, libc++]
-        build_type: [Debug]
-        include:
-          - compiler: clang
-            cc: "clang"
-            cxx: "clang++"
-            cxx_flags: "-stdlib=libstdc++"
-          - version: 15
-            compiler: clang
-            install: sudo apt update && sudo apt install -y clang-15
-            toolchain_root: "/usr/lib/llvm-15"
-          - version: 15
-            compiler: clang
-            stdlib: libc++
-            install: sudo apt update && sudo apt install -y clang-15 libc++-15-dev libc++abi-15-dev
-            cxx_flags: "-stdlib=libc++"
-          - version: 14
-            compiler: clang
-            install: sudo apt update && sudo apt install -y clang-14
-            toolchain_root: "/usr/lib/llvm-14"
-          - version: 14
-            compiler: clang
-            stdlib: libc++
-            install: sudo apt update && sudo apt install -y clang-14 libc++-14-dev libc++abi-14-dev
-            cxx_flags: "-stdlib=libc++"
-        exclude:
-          - compiler: clang
-            version: 14
-            stdlib: libstdc++
 
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -364,6 +263,13 @@ jobs:
           path: ~/cpm-cache
           key: ${{runner.os}}-${{env.cache-name}}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
 
+      # https://github.com/actions/runner-images/issues/9524
+      - name: Fix kernel mmap rnd bits
+        # Asan in llvm 14 provided in ubuntu 22.04 is incompatible with
+        # high-entropy ASLR in much newer kernels that GitHub runners are
+        # using leading to random crashes: https://reviews.llvm.org/D148280
+        run: sudo sysctl vm.mmap_rnd_bits=28
+
       - name: Build Unit Tests
         run: cmake --build ${{github.workspace}}/build -t unit_tests
 
@@ -486,7 +392,7 @@ jobs:
 
   merge_ok:
     runs-on: ${{ github.repository_owner == 'intel' && 'intel-' || '' }}ubuntu-24.04
-    needs: [build_and_test_24, build_and_test_22, mutate, quality_checks_pass, sanitize, valgrind]
+    needs: [build_and_test_24, mutate, quality_checks_pass, sanitize, valgrind]
     if: ${{ !cancelled() }}
     steps:
       - name: Enable merge
