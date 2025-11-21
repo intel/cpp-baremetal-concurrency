@@ -5,18 +5,17 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <atomic>
 #include <concepts>
 #include <cstdint>
 #include <utility>
 
 namespace {
 auto test_before_definition() {
-    conc::call_in_critical_section([] {});
+    CHECK(conc::call_in_critical_section([] { return 17; }) == 17);
 }
 
 struct custom_policy {
-    static inline std::atomic<std::uint64_t> count{};
+    static inline std::uint64_t count{};
 
     template <typename = void, std::invocable F, std::predicate... Pred>
         requires(sizeof...(Pred) < 2)
@@ -43,26 +42,27 @@ TEST_CASE("custom policy models concept", "[freestanding_injected_policy]") {
 }
 
 TEST_CASE("injected custom policy is used", "[freestanding_injected_policy]") {
-    auto c = custom_policy::count.load();
-    conc::call_in_critical_section([] {});
+    auto c = custom_policy::count;
+    CHECK(conc::call_in_critical_section([] { return 17; }) == 17);
     CHECK(custom_policy::count - c == 1);
-    conc::call_in_critical_section([] {}, [] { return true; });
+    CHECK(conc::call_in_critical_section([] { return 17; }) == 17);
     CHECK(custom_policy::count - c == 2);
 }
 
 TEST_CASE("injected custom policy is used before definition",
           "[freestanding_injected_policy]") {
-    auto c = custom_policy::count.load();
+    auto c = custom_policy::count;
     test_before_definition();
     CHECK(custom_policy::count - c == 1);
 }
 
 TEST_CASE("predicate is used", "[freestanding_injected_policy]") {
     auto predicate_used = 0;
-    conc::call_in_critical_section([] {},
-                                   [&] {
-                                       ++predicate_used;
-                                       return true;
-                                   });
+    auto v = conc::call_in_critical_section([] { return 17; },
+                                            [&] {
+                                                ++predicate_used;
+                                                return true;
+                                            });
+    CHECK(v == 17);
     CHECK(predicate_used == 1);
 }

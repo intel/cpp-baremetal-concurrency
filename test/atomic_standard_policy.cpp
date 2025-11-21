@@ -34,12 +34,15 @@ TEST_CASE("standard policy implements load and store atomically",
     std::uint32_t val{17};
     auto t1 = std::thread([&] {
         auto x = atomic::load(val);
-        CHECK((x == 17 or x == 1337));
+        CHECK((x == 17 or x == 18));
     });
-    auto t2 = std::thread([&] { atomic::store(val, 1337); });
+    auto t2 = std::thread([&] {
+        auto x = atomic::load(val);
+        atomic::store(val, ++x);
+    });
     t1.join();
     t2.join();
-    CHECK(val == 1337);
+    CHECK(val == 18);
 }
 
 TEST_CASE("standard policy implements exchange", "[atomic_standard_policy]") {
