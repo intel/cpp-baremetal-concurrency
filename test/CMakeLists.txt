@@ -18,22 +18,20 @@ function(add_tests)
     endforeach()
 endfunction()
 
-if(${CMAKE_CXX_STANDARD} GREATER_EQUAL 20)
-    add_tests(
-        FILES
-        conc_standard_policy
-        conc_test_policy
-        concepts
-        freestanding_conc_injected_policy
-        hosted_conc_injected_policy
-        MULL_EXCLUSIONS
-        conc_standard_policy
-        conc_test_policy)
+add_tests(
+    FILES
+    atomic_injected_policy
+    atomic_standard_policy
+    conc_standard_policy
+    conc_test_policy
+    concepts
+    freestanding_conc_injected_policy
+    hosted_conc_injected_policy
+    MULL_EXCLUSIONS
+    conc_standard_policy
+    conc_test_policy)
 
-    add_compile_fail_test(fail_no_conc_policy.cpp LIBRARIES concurrency)
-endif()
-
-add_tests(FILES atomic_injected_policy atomic_standard_policy)
+add_compile_fail_test(fail_no_conc_policy.cpp LIBRARIES concurrency)
 
 target_compile_definitions(
     atomic_injected_policy_test

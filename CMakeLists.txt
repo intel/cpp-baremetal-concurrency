@@ -15,7 +15,7 @@ else()
 endif()
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 20)
+    set(CMAKE_CXX_STANDARD 23)
 endif()
 
 add_library(concurrency INTERFACE)
