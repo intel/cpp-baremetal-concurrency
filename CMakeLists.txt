@@ -7,15 +7,15 @@ project(
     DESCRIPTION
         "A header-only C++ library that provides low-level concurrency hooks.")
 
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 23)
+endif()
+
 include(cmake/get_cpm.cmake)
 if(PROJECT_IS_TOP_LEVEL)
     cpmaddpackage("gh:intel/cicd-repo-infrastructure#dev")
 else()
     cpmaddpackage("gh:intel/cicd-repo-infrastructure#3e2bef0")
-endif()
-
-if(NOT DEFINED CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 23)
 endif()
 
 add_library(concurrency INTERFACE)
