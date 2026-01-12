@@ -4,12 +4,12 @@
 #include <conc/detail/freestanding.hpp>
 
 #ifdef CONC_FREESTANDING
-#define HAS_MUTEX 0
+#define CONC_HAS_MUTEX 0
 #else
-#define HAS_MUTEX __has_include(<mutex>)
+#define CONC_HAS_MUTEX __has_include(<mutex>)
 #endif
 
-#if HAS_MUTEX
+#if CONC_HAS_MUTEX
 #include <mutex>
 #endif
 
@@ -20,7 +20,7 @@ namespace conc {
 namespace detail {
 template <typename...> constexpr auto always_false_v = false;
 
-#if HAS_MUTEX
+#if CONC_HAS_MUTEX
 template <typename Mutex = std::mutex> class standard_policy {
     template <typename> static inline Mutex m{};
 
@@ -67,4 +67,4 @@ call_in_critical_section(F &&f, Pred &&...pred)
 }
 } // namespace conc
 
-#undef HAS_MUTEX
+#undef CONC_HAS_MUTEX
