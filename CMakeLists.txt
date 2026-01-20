@@ -36,6 +36,7 @@ target_sources(
               include/conc/detail/freestanding.hpp)
 
 if(PROJECT_IS_TOP_LEVEL)
+    include(CTest)
     add_docs(docs)
     clang_tidy_interface(concurrency)
     add_subdirectory(test)
