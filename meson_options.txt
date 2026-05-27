@@ -1,0 +1,2 @@
+option('docs', type: 'feature', description: 'Build documentation')
+option('tests', type: 'feature', description: 'Build tests')
