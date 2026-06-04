@@ -16,7 +16,7 @@ env:
 
 jobs:
   usage_test:
-    runs-on: ${{ github.repository_owner == 'intel' && 'intel-' || '' }}ubuntu-24.04
+    runs-on: ${{ github.repository_owner == 'intel' && 'intel-azure-' || '' }}ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
