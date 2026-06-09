@@ -12,7 +12,7 @@ env:
 jobs:
   configure:
     name: Configure Github Pages Publishing
-    runs-on: &runner ${{ github.repository_owner == 'intel' && 'intel-' || '' }}ubuntu-24.04
+    runs-on: &runner ${{ github.repository_owner == 'intel' && 'intel-azure-' || '' }}ubuntu-24.04
     outputs:
       enable_publish: ${{ steps.check.outputs.isfork == 'NO' }}
     steps:

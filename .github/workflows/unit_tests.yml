@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   build_and_test_24:
-    runs-on: &runner ${{ github.repository_owner == 'intel' && 'intel-' || '' }}ubuntu-24.04
+    runs-on: &runner ${{ github.repository_owner == 'intel' && 'intel-azure-' || '' }}ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -247,15 +247,12 @@ jobs:
 
       - *save_cpm_cache
 
-      # https://github.com/actions/runner-images/issues/9524
-      - name: Fix kernel mmap rnd bits
-        # Asan in llvm 14 provided in ubuntu 22.04 is incompatible with
-        # high-entropy ASLR in much newer kernels that GitHub runners are
-        # using leading to random crashes: https://reviews.llvm.org/D148280
-        run: sudo sysctl vm.mmap_rnd_bits=28
-
       - name: Build Unit Tests
-        run: cmake --build ${{github.workspace}}/build -t unit_tests
+        run: |
+          if [[ "${{matrix.sanitizer}}" == "thread" ]]; then
+            sudo sysctl vm.mmap_rnd_bits=28
+          fi
+          cmake --build ${{github.workspace}}/build -t unit_tests
 
   valgrind:
     runs-on: *runner
