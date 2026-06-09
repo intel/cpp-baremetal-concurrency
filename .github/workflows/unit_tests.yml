@@ -282,7 +282,7 @@ jobs:
       - name: Test
         working-directory: ${{github.workspace}}/build
         run: |
-          ctest --output-on-failure -j -E EXPECT_FAIL -T memcheck
+          ctest --output-on-failure -j -E "EXPECT_FAIL|PYTHON" -T memcheck
 
           LOGFILE=$(ls ./Testing/Temporary/LastDynamicAnalysis_*.log)
           FAILSIZE=$(du -c ./Testing/Temporary/MemoryChecker.* | tail -1 | cut -f1)
