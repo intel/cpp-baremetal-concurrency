@@ -116,12 +116,12 @@ TEST_CASE("standard policy implements fetch_and atomically",
     std::uint32_t t1_value{};
     std::uint32_t t2_value{};
     auto t1 = std::thread([&] { t1_value += atomic::load(val); });
-    auto t2 = std::thread([&] { t2_value += atomic::fetch_and(val, 0b10); });
+    auto t2 = std::thread([&] { t2_value += atomic::fetch_and(val, 0b11); });
     t1.join();
     t2.join();
-    CHECK((t1_value == 0b101 or t1_value == 0));
+    CHECK((t1_value == 0b101 or t1_value == 0b1));
     CHECK(t2_value == 0b101);
-    CHECK(val == 0);
+    CHECK(val == 0b1);
 }
 
 TEST_CASE("standard policy implements fetch_or", "[atomic_standard_policy]") {
